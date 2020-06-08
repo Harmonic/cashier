@@ -271,6 +271,7 @@ class SubscriptionBuilder
             'tax_percent' => $this->getTaxPercentageForPayload(),
             'trial_end' => $this->getTrialEndForPayload(),
             'off_session' => true,
+            'proration_behavior' => 'none'
         ]);
     }
 
