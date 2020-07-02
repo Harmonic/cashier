@@ -261,18 +261,25 @@ class SubscriptionBuilder
      */
     protected function buildPayload()
     {
-        return array_filter([
+        $payload = array_filter([
             'billing_cycle_anchor' => $this->billingCycleAnchor,
             'coupon' => $this->coupon,
             'expand' => ['latest_invoice.payment_intent'],
             'metadata' => $this->metadata,
             'plan' => $this->plan,
             'quantity' => $this->quantity,
-            'tax_percent' => $this->getTaxPercentageForPayload(),
             'trial_end' => $this->getTrialEndForPayload(),
             'off_session' => true,
             'proration_behavior' => 'none'
         ]);
+
+        if ($taxRates = $this->getTaxRatesForPayload()) {
+            $payload['default_tax_rates'] = $taxRates;
+        } elseif ($taxPercentage = $this->getTaxPercentageForPayload()) {
+            $payload['tax_percent'] = $taxPercentage;
+        }
+
+        return $payload;
     }
 
     /**
@@ -300,6 +307,18 @@ class SubscriptionBuilder
     {
         if ($taxPercentage = $this->owner->taxPercentage()) {
             return $taxPercentage;
+        }
+    }
+
+    /**
+     * Get the tax rates for the Stripe payload.
+     *
+     * @return array|null
+     */
+    protected function getTaxRatesForPayload()
+    {
+        if ($taxRates = $this->owner->taxRates()) {
+            return $taxRates;
         }
     }
 }
