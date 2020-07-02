@@ -639,6 +639,20 @@ class Subscription extends Model
     }
 
     /**
+     * Sync the tax rates of the user to the subscription.
+     *
+     * @return void
+     */
+    public function syncTaxRates()
+    {
+        $stripeSubscription = $this->asStripeSubscription();
+
+        $stripeSubscription->default_tax_rates = $this->user->taxRates();
+
+        $stripeSubscription->save();
+    }
+
+    /**
      * Determine if the subscription has an incomplete payment.
      *
      * @return bool
