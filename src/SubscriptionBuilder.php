@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use DateTimeInterface;
+use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionBuilder
 {
@@ -203,12 +204,20 @@ class SubscriptionBuilder
      * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
      * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
-    public function create($paymentMethod = null, array $options = [])
+    public function create($paymentMethod = null, array $options = [], array $subscriptionOptions = [])
     {
         $customer = $this->getStripeCustomer($paymentMethod, $options);
 
-        /** @var \Stripe\Subscription $stripeSubscription */
-        $stripeSubscription = $customer->subscriptions->create($this->buildPayload());
+        $payload = array_merge(
+            ['customer' => $customer->id],
+            $this->buildPayload(),
+            $subscriptionOptions
+        );
+
+        $stripeSubscription = StripeSubscription::create(
+            $payload,
+            $this->owner->stripeOptions()
+        );
 
         if ($this->skipTrial) {
             $trialEndsAt = null;
